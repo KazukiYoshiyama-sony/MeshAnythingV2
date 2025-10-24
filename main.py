@@ -1,3 +1,4 @@
+import json
 import os, argparse
 import torch
 import time
@@ -87,8 +88,9 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
 
-    cur_time = datetime.datetime.now().strftime("%d_%H-%M-%S")
-    checkpoint_dir = os.path.join(args.out_dir, cur_time)
+    # cur_time = datetime.datetime.now().strftime("%d_%H-%M-%S")
+    # checkpoint_dir = os.path.join(args.out_dir, cur_time)
+    checkpoint_dir = args.out_dir
     os.makedirs(checkpoint_dir, exist_ok=True)
     kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
     accelerator = Accelerator(
@@ -126,11 +128,16 @@ if __name__ == "__main__":
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     dataloader, model = accelerator.prepare(dataloader, model)
     begin_time = time.time()
+
+    et_list = []
+    
     print("Generation Start!!!")
     with accelerator.autocast():
         for curr_iter, batch_data_label in enumerate(dataloader):
-            curr_time = time.time()
+            st = time.perf_counter()
             outputs = model(batch_data_label['pc_normal'], sampling=args.sampling)
+            et = time.perf_counter() - st
+            et_list.append([f'{batch_data_label["uid"][0]}', et])
             batch_size = outputs.shape[0]
             device = outputs.device
 
@@ -160,3 +167,7 @@ if __name__ == "__main__":
                 print(f"{save_path} Over!!")
     end_time = time.time()
     print(f"Total time: {end_time - begin_time}")
+
+    print(et_list)
+    with open(f"./elapsed_time_meshanythingv2.json", "w") as fp:
+        json.dump(et_list, fp)
