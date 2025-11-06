@@ -29,14 +29,14 @@ class Dataset:
                 self.data.append({'pc_normal': cur_data, 'uid': input_path.split('/')[-1].split('.')[0]})
 
         elif input_type == 'mesh':
-            mesh_list = []
+            pc_list = []
             for input_path in input_list:
                 # load ply
                 cur_data = trimesh.load(input_path)
-                mesh_list.append(cur_data)
-            if mc:
-                print("First Marching Cubes and then sample point cloud, need several minutes...")
-            pc_list, _ = process_mesh_to_pc(mesh_list, marching_cubes=mc, mc_level=mc_level)
+                if mc:
+                    print("First Marching Cubes and then sample point cloud, need several minutes...")
+                pc_list_, _ = process_mesh_to_pc([cur_data], marching_cubes=mc, mc_level=mc_level)
+                pc_list.append(pc_list_[0])
             for input_path, cur_data in zip(input_list, pc_list):
                 self.data.append({'pc_normal': cur_data, 'uid': input_path.split('/')[-1].split('.')[0]})
         print(f"dataset total data samples: {len(self.data)}")
