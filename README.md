@@ -58,7 +58,7 @@ conda activate MeshAnythingV2
 pip install torch==2.1.1 torchvision==0.16.1 torchaudio==2.1.1 --index-url https://download.pytorch.org/whl/cu118
 pip install -r requirements.txt
 pip install -r training_requirements.txt # in case you want to train
-pip install flash-attn --no-build-isolation
+pip install flash-attn==2.7.0.post2 --no-build-isolation
 pip install -U gradio
 ```
 
